@@ -1,0 +1,136 @@
+main h1 {
+  width: 650px;
+  display: block;
+  margin: 0 auto 24px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+
+form {
+  padding: 24px;
+  background: white;
+  width: 50%;
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-des,
+.form-amount {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 14px;
+  margin: 0 0 6px;
+  color: #374151;
+  font-weight: 500;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  border-radius: 6px;
+  outline: none;
+  border: 1px solid #e5e7eb;
+  background: white;
+}
+
+input:focus,
+select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-line2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+/* Currency styling */
+.amount-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.amount-input span {
+  padding: 10px 12px;
+  color: #6b7280;
+}
+
+.amount-input input {
+  border: none;
+  flex: 1;
+  padding: 10px 14px 10px 0;
+  font-size: 15px;
+  outline: none;
+}
+
+/* Date input wrapper with calendar icon */
+.date-input {
+  position: relative;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+}
+
+.date-input input[type="date"] {
+  border: none;
+  width: 100%;
+  padding: 10px 14px;
+  padding-left: 44px; /* make room for the icon */
+  font-size: 15px;
+  outline: none;
+  background: transparent;
+  box-sizing: border-box;
+  -webkit-appearance: none; /* remove default calendar icon in some browsers */
+}
+
+.date-input .calendar-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.date-input:hover .calendar-icon {
+  background: rgba(37,99,235,0.04);
+}
+
+.date-input:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.06);
+}
+
+/* Button */
+.add-transaction-btn {
+  background: #2563eb;
+  color: white;
+  padding: 12px 16px;
+  font-size: 16px;
+  width: 100%;
+  border: none;
+  margin-top: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.add-transaction-btn:hover {
+  background: #1d4ed8;
+}

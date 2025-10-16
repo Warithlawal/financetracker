@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Insight</title>
+	
+	<link rel="stylesheet" href="generalstyles.css">
+	<link rel="stylesheet" href="insightstyles.css">
+	<script src="https://kit.fontawesome.com/127aef0c53.js" crossorigin="anonymous"></script>
+    <link
+      rel="stylesheet"
+      data-purpose="Layout StyleSheet"
+      title="Web Awesome"
+      href="/css/app-wa-09b459cf485d4b1f3304947240314c05.css?vsn=d">
+     <link
+        rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.6.0/css/all.css">
+     <link
+        rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.6.0/css/sharp-duotone-solid.css">
+     <link
+        rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.6.0/css/sharp-thin.css">
+     <link
+        rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.6.0/css/sharp-solid.css">
+     <link
+        rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.6.0/css/sharp-regular.css">
+     <link
+        rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.6.0/css/sharp-light.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+	<div id="pageLoader" class="page-loader">
+    <div class="spinner"></div>
+  </div>
+	<nav>
+		<div><h1>Finance<span>Tracker</span></h1></div>
+		<div class="nav-list">
+			<a href="#" id="themeIconToggle">
+				<i class="fa-regular fa-moon" id="themeIcon"></i>
+			</a>
+
+			<a href="#">
+				<i class="fa-regular fa-bell"></i>
+			</a>
+
+			<a href="#">
+				<i class="fa-regular fa-user"></i>
+				<span id="navUserName"></span>
+			</a>
+		</div>
+	</nav>
+
+	<section class="main-section">
+		<aside>
+			<a href="index.html">
+				<i class="fa-regular fa-grid-2"></i>
+				<span>Dashboard</span>
+			</a>
+			<a href="transaction.html">
+				<i class="fa-regular fa-list"></i>
+				<span>Transactions</span>
+			</a>
+			<a href="addtransaction.html">
+				<i class="fa-regular fa-circle-plus"></i>
+				<span>Add Transaction</span>
+			</a>
+			<a href="insight.html">
+				<i class="fa-regular fa-chart-mixed"></i>
+				<span>Insight</span>
+			</a>
+			<a href="settings.html">
+				<i class="fa-regular fa-gear"></i>
+				<span>Settings</span>
+			</a>
+			<a href="#" id="logoutBtn" class="logout-btn">
+		    <i class="fa-regular fa-right-from-bracket"></i>
+		    <span>Logout</span>
+ 		 	</a>
+		</aside>
+		<main>
+			<div class="insight-header">
+				<h1>Financial Insight</h1>
+				<div class="insight-filter">
+					
+				</div>
+			</div>
+			
+			<div class="insight-content">
+				<div class="insight-details">
+					<div class="insight-text">
+						<p>Total Income</p>
+						<h1>0</h1>
+					</div>
+				</div>
+				<div class="insight-details">
+					<div class="insight-text">
+						<p>Total Expenses</p>
+						<h1>0</h1>
+					</div>
+				</div>
+				<div class="insight-details">
+					<div class="insight-text">
+						<p>Savings Rate</p>
+						<h1>0.0%</h1>
+					</div>
+				</div>
+			</div>
+
+			<div class="income-container">
+			  <h1>Income vs Expenses (Last 30 Days)</h1>
+			</div>
+
+			<div class="charts-container">
+				<div class="chart-content">
+					<h2>Top Spending Category</h2>
+					<div class="pie-chart">
+						
+					</div>
+				</div>
+				<div class="chart-content">
+					<h2>Savings Trend</h2>
+					<div class="bar-chart">
+						
+					</div>
+				</div>
+			</div>
+		</main>
+	</section>
+		<div id="toast" class="toast"></div>
+<script type="module" src="activeLink.js"></script>
+<script type="module" src="firebase.js"></script>
+<script type="module" src="theme.js"></script>
+<script type="module" src="currency.js"></script>
+<script type="module" src="appCurrency.js"></script>
+<script type="module" src="auth/authState.js"></script>
+<script type="module" src="insight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

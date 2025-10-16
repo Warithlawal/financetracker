@@ -1,0 +1,338 @@
+/* Default light theme */
+body[data-theme="light"] {
+  --bg-color: #ffffff;
+  --text-color: #222;
+  --card-bg: #f5f5f5;
+  --dot-color: #6B7280;
+}
+
+/* Dark theme */
+body[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #fff;
+  --card-bg: #2a2a2a;
+  --dot-color: #fff;
+}
+
+.no-transactions {
+  text-align: center;
+  padding: 24px;
+ 	color: var(--text-color);
+  font-size: 16px;
+}
+
+.no-transactions .add-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #2563EB;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.no-transactions .add-link:hover {
+  text-decoration: underline;
+}
+
+
+.transaction-download-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 10px;
+}
+
+.transaction-download-container button {
+  padding: 10px 12px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.transaction-download-container button i {
+  margin-right: 8px;
+}
+
+.search-container {
+  padding: 16px;
+  margin: 24px 0 0;
+  background: var(--bg-color);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  flex-wrap: wrap; 
+}
+
+.search {
+  flex: 1 1 300px; 
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 5px;
+  border: 1px solid #e5e7eb;
+  min-width: 0; 
+}
+
+.search-input {
+  font-size: 16px;
+  outline: none;
+  border: none;
+  margin-left: 10px;
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+select {
+  width: 180px;
+  padding: 10px 14px;
+  font-size: 16px;
+  border-radius: 6px;
+  outline: none;
+  border: 1px solid #e5e7eb;
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.transaction-sort {
+	display: flex;
+	gap: 5px;
+	justify-content: flex-end;
+	margin: 24px 0 0;
+	align-items: center;
+	font-size: 14px;
+}
+
+.transaction-sort a {
+	padding: 4px 8px;
+	color: var(--text-color);
+	text-decoration: none;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.transaction-sort a.active {
+  color: #007bff;
+  font-weight: 600;
+}
+
+.transaction-sort i {
+	font-size: 12px;
+}
+
+.transaction-sort .active{
+	background: #F3F4F6;
+	color: #2563EB;
+	border-radius: 4px;
+}
+
+.transaction-container {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 24px 0 0;
+}
+
+.transaction-table {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: var(--bg-color);
+	padding: 16px;
+	border-radius: 5px;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.01), 
+	            0 1px 1px rgba(0, 0, 0, 0.08);
+}
+
+.transaction-details {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+}
+
+.transaction-indicator {
+	width: 40px;
+	height: 40px;
+	padding: 12px;
+	border-radius: 50%;
+	text-align: center;
+}
+
+.transaction-title-table {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.transaction-title h4 {
+	font-size: 16px;
+	color: var(--text-color);
+	font-weight: 500;
+}
+
+.transaction-date {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	font-size: 12px;
+}
+
+.transaction-date-flex {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+	font-size: 12px;
+	color: var(--text-color);
+}
+
+.transaction-date i {
+	color: #6B7280;
+}
+
+.dot {
+	background: var(--dot-color);
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+}
+
+.tag {
+	padding: 2px 8px;
+	border-radius: 10px;	
+	color: var(--text-color);
+}
+
+.medicaltag {
+	background: #F9731620;
+	color: #F97316;
+}
+
+.entertainmenttag {
+	color: #8B5CF6;
+  background: #8B5CF620;
+}
+
+.incometag {
+	color: #22C55E;
+  background: #22C55E20;
+}
+
+.gymtag {
+	color: #EF4444;
+  background: #EF444420;
+}
+
+.foodtag {
+	color: #EC4899;
+  background: #EC489920;
+}
+
+.shoppingtag {
+	color: #14B8A6;
+  background: #14B8A620;
+}
+
+.utilitytag {
+	color: #3B82F6;
+  background: #3B82F620;
+}
+
+.transporttag {
+	color: #6366F1;
+  background: #6366F120;
+}
+
+.fitnesstag {
+  color: #10B981;
+  background: #10B98120;
+}
+
+.housingtag {
+  color: #3B82F6;
+  background: #3B82F620;
+}
+
+.groceriestag {
+	color: #F59E0B;
+	background: #F59E0B20;
+}
+
+.otherstag {
+	color: #999E0B;
+	background: #999E0B20;
+}
+
+.debit {
+	color: #EF4444;
+}
+
+.credit {
+	color: #22C55E;
+}
+
+.transaction-amount h4 {
+	font-size: 16px;
+	font-weight: 500;
+}
+
+@media only screen and (max-width: 873px) {
+  .filter-section i {
+    display: none;
+  }
+}
+
+
+@media only screen and (max-width: 800px) {
+  .search-container {
+    align-items: stretch;
+  }
+
+  .search,
+  .filter-section,
+  select {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .transaction-download-container h1 {
+    font-size: 20px;
+  }
+
+  .search {
+    width: 100%;
+  }
+
+  .filter-section {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  select {
+    width: 100%;
+  }
+
+  .transaction-date {
+  	flex-direction: column;
+  	align-items: flex-start;
+  }
+}

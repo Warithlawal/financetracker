@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guest Mode</title>
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Continue as Guest?</h2>
+    <p>Your data will be stored temporarily on this device.</p>
+    <button id="continueGuest">Yes, Continue</button>
+    <button onclick="window.location.href='login.html'">Login Instead</button>
+  </div>
+
+  <script type="module" src="auth/guest.js"></script>
+  <!-- ✅ Toast Notification -->
+<div id="toast" class="toast"></div>
+
+</body>
+</html>

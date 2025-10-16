@@ -1,0 +1,284 @@
+/* Full-page loader styles */
+.page-loader {
+  position: fixed;
+  inset: 0;
+  background: var(--loader-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.page-loader.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Spinner animation */
+.spinner {
+  width: 45px;
+  height: 45px;
+  border: 4px solid #ccc;
+  border-top-color: #2563EB; /* your brand blue */
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Default light theme */
+body[data-theme="light"] {
+  --bg-color: #ffffff;
+  --main-bg-color: #F9FAfB;
+  --text-color: #222;
+  --card-bg: #f5f5f5;
+  --loader-bg: rgba(255, 255, 255, 0.95);
+}
+
+/* Dark theme */
+body[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --main-bg-color: #6B7280; 
+  --text-color: #fff;
+  --card-bg: #2a2a2a;
+  --loader-bg: rgba(54, 52, 52, 0.95);
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+nav {
+	display: flex;
+	justify-content: space-between;
+	padding: 16px 24px;
+	background: var(--bg-color);
+}
+
+nav h1 {
+	font-size: 20px;
+	font-weight: 600;
+	color: #2563EB;
+}
+
+nav h1 span {
+	color:  var(--text-color);
+}
+
+.nav-list {
+	display: flex;
+	gap: 15px;
+	align-items: center;
+}
+
+.nav-list a {
+	text-decoration: none;
+	color:  var(--text-color);
+}
+
+.nav-list a:first-child {
+	background: #F3F4f6;
+	width: 30px;
+ 	height: 30px;
+	border-radius: 50%;
+	padding: 6px 8px;
+	display: flex;
+ 	align-items: center;
+ 	justify-content: center;
+}
+
+.nav-list a span {
+	margin-left: 4px;
+}
+
+.main-section {
+	display: grid;
+	grid-template-columns: 256px 1fr;
+	height: 100vh;
+}
+
+aside {
+	display: flex;
+	flex-direction: column;
+	padding: 24px 0;
+	font-weight: 500;
+}
+
+aside a {
+	padding: 12px 24px;
+	text-decoration: none;
+	color:  var(--text-color);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	height: 48px;
+}
+
+aside a.active {
+  background: #EFF6FF;
+  color: #2563EB;
+  border-right: 4px solid #2563EB;
+}
+
+aside a span {
+	margin-left: 16px;
+}
+
+aside a i {
+	font-size: 18px;
+}
+
+.logout-btn {
+  color: #ef4444;
+  font-weight: 500;
+  border-top: 1px solid #e5e7eb;
+}
+
+.logout-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Dark mode compatibility */
+body[data-theme="dark"] .logout-btn {
+  border-top-color: #333;
+  color: #f87171;
+}
+
+body[data-theme="dark"] .logout-btn:hover {
+  background: #7f1d1d;
+  color: #fff;
+}
+
+
+
+main {
+	background: var(--main-bg-color);
+	padding: 32px;
+}
+
+main h1 {
+	font-size: 24px;
+}
+
+body {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-list i {
+  transition: transform 0.3s, color 0.3s;
+}
+
+.nav-list i.fa-sun {
+  color: #ffca28; /* yellowish for sun */
+  transform: rotate(180deg);
+}
+
+.nav-list i.fa-moon {
+  color: #222;
+}
+
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Optional visual for the toggle */
+.theme-toggle .toggle {
+  width: 40px;
+  height: 20px;
+  background: #ccc;
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.theme-toggle .toggle.active {
+  background: #111;
+}
+
+/* THEME TOGGLE (Settings Page) */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.theme-toggle span {
+  font-size: 14px;
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+.theme-toggle .toggle {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  background: #e5e7eb; /* matches your light gray style */
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* The round slider (the moving dot) */
+.theme-toggle .toggle::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Active (dark mode) state */
+.theme-toggle .toggle.active {
+  background: #2563EB; /* your brand blue */
+}
+
+/* Move dot to right when active */
+.theme-toggle .toggle.active::before {
+  transform: translateX(22px);
+}
+
+/* Adapt colors for dark mode */
+body[data-theme="dark"] .theme-toggle .toggle {
+  background: #374151; /* dark gray tone for toggle base */
+}
+
+body[data-theme="dark"] .theme-toggle .toggle.active {
+  background: #60a5fa; /* lighter blue glow */
+}
+
+body[data-theme="dark"] .theme-toggle span {
+  color: #e5e7eb;
+}
+
+
+
+
+/*--------------------------------------------media query------------------------------------------*/
+
+@media only screen and (max-width: 767px) {
+	.main-section {
+		grid-template-columns: 55px 1fr;
+	}
+} 
