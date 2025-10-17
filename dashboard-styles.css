@@ -146,9 +146,9 @@ body[data-theme="dark"] {
 }
 
 .recent-header {
-  	display: flex;
-  	justify-content: space-between;
-  	align-items: center;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 .recent-header h2 {
@@ -314,4 +314,46 @@ body[data-theme="dark"] {
 	.dashboard-content {
 		grid-template-columns: 1fr;
 	}
+}
+
+@media only screen and (max-width: 500px) {
+	.recent-transactions {
+	 	padding: 24px 14px;
+	}
+
+	.recent-header h2 {
+		font-size: 15px;
+	}
+
+	.recent-header a {
+		font-size: 12px;
+	}
+
+	.transaction-list {
+   	padding: 12px 8px;
+	}
+
+	.transaction-content {
+		gap: 10px;
+	}
+
+	.transaction-details-dashboard {
+		gap: 10px;
+	}
+
+	.transaction-details-dashboard p {
+   	font-size: 14px;
+	}
+
+.transaction-details-dashboard span {
+   	font-size: 10px;
+	}
+
+	.debit-transaction-amount {
+   	font-size: 14px;
+ }
+
+ .credit-transaction-amount {
+ 	font-size: 14px;
+ }
 }

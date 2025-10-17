@@ -336,3 +336,25 @@ select {
   	align-items: flex-start;
   }
 }
+
+@media only screen and (max-width: 500px) {
+  .transaction-table {
+    padding: 16px 12px;
+  }
+
+  .transaction-details {
+    gap: 10px;
+  }
+
+  .transaction-title h4 {
+    font-size: 14px;
+  }
+
+  .transaction-amount h4 {
+    font-size: 14px;
+  }
+
+  .dot {
+   display: none;
+  }
+}

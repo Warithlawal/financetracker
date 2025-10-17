@@ -282,3 +282,11 @@ body[data-theme="dark"] .theme-toggle span {
 		grid-template-columns: 55px 1fr;
 	}
 } 
+
+
+@media only screen and (max-width: 767px) {
+    main {
+    padding: 32px 12px;
+  }
+} 
+
