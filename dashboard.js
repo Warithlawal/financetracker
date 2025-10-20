@@ -11,16 +11,16 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { formatCurrency, fetchRates } from "./currency.js";
 import { currentCurrency, setCurrency } from "./appCurrency.js";
+import { displayUserName } from "./authUtils.js";
 
 let categoryChart, weeklyChart;
-
 
 // ==============================
 // 👤 USER SESSION CHECK
 // ==============================
-const user =
-  JSON.parse(localStorage.getItem("loggedUser")) ||
-  JSON.parse(localStorage.getItem("guestSession"));
+const loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
+const guestSession = JSON.parse(localStorage.getItem("guestSession"));
+const user = loggedUser || guestSession;
 
 if (!user) {
   window.location.href = "login.html";
@@ -72,9 +72,6 @@ setCurrency(savedCurrency);
 function listenToTransactions() {
   if (unsubscribe) unsubscribe();
   latestSnapshot = null;
-
-  const loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
-  const guestSession = JSON.parse(localStorage.getItem("guestSession"));
 
   if (guestSession) {
     // Guest mode → local transactions
@@ -262,9 +259,8 @@ function setupViewAll(transactions, rates) {
 }
 
 // ==============================
-// 📊 CHARTS (same as before)
+// 📊 CHARTS
 // ==============================
-
 function getDayName(dateString) {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", { weekday: "short" });
@@ -345,6 +341,8 @@ function renderWeeklyChart(dailyTotals) {
       ],
     },
     options: {
+      responsive: true,
+      maintainAspectRatio: false, // <-- add this
       scales: { y: { beginAtZero: true } },
       plugins: { legend: { display: false } },
     },
@@ -355,7 +353,7 @@ function renderWeeklyChart(dailyTotals) {
 // 🌍 CURRENCY CHANGE HANDLER
 // ==============================
 window.addEventListener("currencyChanged", async (e) => {
-  const { currency, symbol } = e.detail;
+  const { currency } = e.detail;
   setCurrency(currency);
   updateDashboardUI();
 
@@ -403,8 +401,5 @@ if (logoutBtn) {
   });
 }
 
-const navUserName = document.getElementById("navUserName");
-if (navUserName) {
-  if (user?.username) navUserName.textContent = user.username;
-  else if (user) navUserName.textContent = "Guest";
-}
+// ✅ Show username in navbar
+displayUserName("navUserName");

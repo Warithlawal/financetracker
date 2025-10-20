@@ -12,18 +12,17 @@ import {
 import { formatCurrency, fetchRates } from "./currency.js";
 import { currentCurrency, setCurrency } from "./appCurrency.js";
 
-let categoryChart, weeklyChart, incomeVsExpenseChart;
-
 // ==============================
 // 👤 USER SESSION CHECK
 // ==============================
-const user =
-  JSON.parse(localStorage.getItem("loggedUser")) ||
-  JSON.parse(localStorage.getItem("guestSession"));
+const loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
+const guestSession = JSON.parse(localStorage.getItem("guestSession"));
 
-if (!user) {
+if (!loggedUser && !guestSession) {
   window.location.href = "login.html";
 }
+
+const user = loggedUser || guestSession;
 
 // ==============================
 // 🔐 LOGOUT HANDLER
@@ -38,6 +37,7 @@ function logout() {
 // ==============================
 // 📦 VARIABLES
 // ==============================
+let categoryChart, weeklyChart, incomeVsExpenseChart;
 let latestSnapshot = null;
 let totals = { balance: 0, income: 0, expenses: 0 };
 let categoryTotals = {};
@@ -70,14 +70,10 @@ function listenToTransactions() {
   if (unsubscribe) unsubscribe();
   latestSnapshot = null;
 
-  const loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
-  const guestSession = JSON.parse(localStorage.getItem("guestSession"));
-
   if (guestSession) {
     const guestTransactions =
       JSON.parse(localStorage.getItem("guestTransactions")) || [];
 
-    // ✅ Normalize guest data (ensure type & date)
     const normalized = guestTransactions.map((t) => ({
       ...t,
       type: t.type || "expense",
@@ -118,9 +114,7 @@ function listenToTransactions() {
         renderWeeklyChart(dailyTotals);
         renderIncomeVsExpenseChart(transactions, rates);
       },
-      (err) => {
-        console.error("onSnapshot error (insight):", err);
-      }
+      (err) => console.error("onSnapshot error (insight):", err)
     );
   }
 }
@@ -145,15 +139,12 @@ function updateTotals(transactions, rates = {}) {
       convertedAmount = amount / rates[fromCurrency];
     }
 
-    // ✅ Defensive date handling
     const txnDate = txn.date ? new Date(txn.date) : new Date();
     if (isNaN(txnDate)) continue;
 
-    if (txn.type === "income") {
-      totalIncome += convertedAmount;
-    } else {
+    if (txn.type === "income") totalIncome += convertedAmount;
+    else {
       totalExpenses += convertedAmount;
-
       const cat = txn.category || "others";
       categoryTotals[cat] = (categoryTotals[cat] || 0) + convertedAmount;
 
@@ -261,10 +252,7 @@ function renderWeeklyChart(dailyTotals) {
         responsive: true,
         maintainAspectRatio: false,
         scales: { y: { beginAtZero: true } },
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: false },
-        },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
       },
     });
     return;
@@ -302,8 +290,10 @@ function renderWeeklyChart(dailyTotals) {
   });
 }
 
+
+
 // ==============================
-// ✅ Income vs Expenses (Last 30 Days) Chart
+// ✅ Income vs Expenses (Last 30 Days)
 // ==============================
 function renderIncomeVsExpenseChart(transactions = [], rates = {}) {
   const container = document.querySelector(".income-container");
@@ -390,7 +380,7 @@ function renderIncomeVsExpenseChart(transactions = [], rates = {}) {
         tooltip: {
           enabled: hasData,
           callbacks: {
-            label: function (context) {
+            label: (context) => {
               const v = context.raw || 0;
               try {
                 return formatCurrency(v, currentCurrency);
@@ -471,15 +461,15 @@ function showToast(message, type = "info") {
 // 🚪 LOGOUT + NAV USERNAME
 // ==============================
 const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    logout();
-  });
-}
+if (logoutBtn) logoutBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  logout();
+});
 
+// ✅ Show username in navbar
 const navUserName = document.getElementById("navUserName");
 if (navUserName) {
-  if (user?.username) navUserName.textContent = user.username;
-  else navUserName.textContent = "Guest";
+  if (loggedUser?.name) navUserName.textContent = loggedUser.name;
+  else if (guestSession) navUserName.textContent = "Guest";
+  else navUserName.textContent = "";
 }

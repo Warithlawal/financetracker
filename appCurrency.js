@@ -4,11 +4,15 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/fi
 import { doc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { currencySymbols } from "./currency.js";
 
-// 🔹 Default currency setup (from localStorage or fallback)
+// -----------------------------
+// Exports: currentCurrency, currentSymbol (mutable bindings)
+// -----------------------------
 export let currentCurrency = localStorage.getItem("userCurrency") || "NGN";
 export let currentSymbol = currencySymbols[currentCurrency] || "₦";
 
-// 🔹 Helper: Broadcast current currency to all scripts/pages
+// -----------------------------
+// Broadcast helper
+// -----------------------------
 function broadcastCurrencyChange(code, symbol) {
   window.dispatchEvent(
     new CustomEvent("currencyChanged", {
@@ -17,61 +21,56 @@ function broadcastCurrencyChange(code, symbol) {
   );
 }
 
-// 🔹 Internal: Update global currency and broadcast
+// -----------------------------
+// Internal updater
+// -----------------------------
 function updateCurrency(code) {
   currentCurrency = code;
   currentSymbol = currencySymbols[code] || code;
-
-  // Persist locally for guest users
   localStorage.setItem("userCurrency", code);
-
-  // Immediately broadcast the update
   broadcastCurrencyChange(code, currentSymbol);
 }
 
-// 🔹 Public helper: Allow manual currency setting
+// -----------------------------
+// Public helpers
+// -----------------------------
 export function setCurrency(code) {
   updateCurrency(code);
 }
 
-// 🔹 Public helper: Get symbol by code
 export function getCurrencySymbol(code) {
   return currencySymbols[code] || code;
 }
 
-// 🔹 Public helper: Get active currency code
 export function getCurrencyCode() {
   return currentCurrency;
 }
 
-// ✅ Broadcast the initial local value on page load
+// -----------------------------
+// Initial broadcast so pages can react on load
+// -----------------------------
 broadcastCurrencyChange(currentCurrency, currentSymbol);
 
-// ===============================
-// 🔥 FIREBASE SYNC (LIVE CURRENCY UPDATES)
-// ===============================
+// -----------------------------
+// Firebase sync: keep user preference live
+// -----------------------------
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
 
   const settingsRef = doc(db, "users", user.uid, "meta", "settings");
 
   try {
-    // Load once
     const snap = await getDoc(settingsRef);
     if (snap.exists()) {
       const userCurrency = snap.data().currency || "NGN";
-      if (userCurrency !== currentCurrency) {
-        updateCurrency(userCurrency);
-      }
+      if (userCurrency !== currentCurrency) updateCurrency(userCurrency);
     }
 
-    // Subscribe to live changes (Firestore onSnapshot)
+    // subscribe to live changes
     onSnapshot(settingsRef, (s) => {
       if (s.exists()) {
         const liveCurrency = s.data().currency || "NGN";
-        if (liveCurrency !== currentCurrency) {
-          updateCurrency(liveCurrency);
-        }
+        if (liveCurrency !== currentCurrency) updateCurrency(liveCurrency);
       }
     });
   } catch (err) {
@@ -79,14 +78,26 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// ===============================
-// 🌍 GLOBAL ACCESS
-// ===============================
+// -----------------------------
+// Window globals (convenience)
+// -----------------------------
 window.currentCurrency = currentCurrency;
 window.currentSymbol = currentSymbol;
-
-// Keep window globals updated when currency changes
 window.addEventListener("currencyChanged", (e) => {
   window.currentCurrency = e.detail.code;
   window.currentSymbol = e.detail.symbol;
 });
+
+// -----------------------------
+// Fallback/static exchange rates (exported)
+// - Exported so other modules can import `exchangeRates`
+// - You can update these or replace with live fetch in currency.js
+// -----------------------------
+export const exchangeRates = {
+  NGN: 1,
+  USD: 0.0012,
+  GBP: 0.0009,
+  EUR: 0.0011,
+  CAD: 0.0016,
+  // add entries as needed
+};

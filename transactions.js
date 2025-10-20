@@ -6,9 +6,13 @@ import {
   orderBy,
   query,
   where,
+  deleteDoc,
+  doc,
+  getDoc,
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { fetchRates, formatCurrency } from "./currency.js";
 import { currentCurrency, currentSymbol, setCurrency } from "./appCurrency.js";
+import { logout, displayUserName, showToast } from "./authUtils.js";
 
 // ===================================
 // 🧩 CHECK SESSION
@@ -29,7 +33,6 @@ const searchInput = document.querySelector(".search-input");
 const categoryFilter = document.querySelector(".filter-section select");
 const sortLinks = document.querySelectorAll(".transaction-sort a");
 const navUserName = document.getElementById("navUserName");
-const logoutBtn = document.getElementById("logoutBtn");
 
 let allTransactions = [];
 let currentSort = { field: "createdAt", direction: "desc" };
@@ -41,7 +44,7 @@ let activeSymbol = currentSymbol;
 // ===================================
 if (loggedUser) {
   // ✅ Logged-in user → fetch from Firestore
-  const userId = loggedUser.id || loggedUser.email; // ensure unique ID from registration
+  const userId = loggedUser.id || loggedUser.email;
 
   const q = query(
     collection(db, "transactions"),
@@ -71,10 +74,7 @@ if (loggedUser) {
     renderTransactions(allTransactions);
   }
 
-  // ✅ Load immediately
   loadGuestTransactions();
-
-  // ✅ Listen for guest updates (triggered when adding transactions)
   window.addEventListener("guestTransactionsUpdated", loadGuestTransactions);
 }
 
@@ -114,7 +114,7 @@ function renderTransactions(data, rates = {}) {
     container.insertAdjacentHTML(
       "beforeend",
       `
-      <div class="transaction-table">
+      <div class="transaction-table" data-id="${txn.id}">
         <div class="transaction-details">
           <div class="transaction-indicator ${categoryClass}">
             <i class="fa-regular ${
@@ -142,11 +142,78 @@ function renderTransactions(data, rates = {}) {
           <h4 data-value="${amount}" data-type="${txn.type}">
             ${formattedAmount}
           </h4>
+          <div class="transaction-actions">
+          <button class="edit-btn" data-id="${txn.id}">Edit</button>
+          <button class="delete-btn" data-id="${txn.id}"><i class="fa-solid fa-trash"></i></button>
+        </div>
         </div>
       </div>
     `
     );
   });
+
+  attachActionListeners();
+}
+
+// ===================================
+// ✏️ EDIT & 🗑️ DELETE HANDLERS
+// ===================================
+function attachActionListeners() {
+  document.querySelectorAll(".delete-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      if (confirm("Are you sure you want to delete this transaction?")) {
+        await deleteTransaction(id);
+      }
+    });
+  });
+
+  document.querySelectorAll(".edit-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      await editTransaction(id);
+    });
+  });
+}
+
+async function deleteTransaction(id) {
+  if (guestSession) {
+    let guestTransactions =
+      JSON.parse(localStorage.getItem("guestTransactions")) || [];
+    guestTransactions = guestTransactions.filter((txn) => txn.id !== id);
+    localStorage.setItem("guestTransactions", JSON.stringify(guestTransactions));
+    showToast("Transaction deleted!", "success");
+    renderTransactions(guestTransactions);
+  } else {
+    try {
+      await deleteDoc(doc(db, "transactions", id));
+      showToast("Transaction deleted!", "success");
+    } catch (err) {
+      console.error("Delete error:", err);
+      showToast("Failed to delete transaction.", "error");
+    }
+  }
+}
+
+async function editTransaction(id) {
+  if (guestSession) {
+    const guestTransactions =
+      JSON.parse(localStorage.getItem("guestTransactions")) || [];
+    const txn = guestTransactions.find((t) => t.id === id);
+    if (txn) {
+      localStorage.setItem("editTransaction", JSON.stringify(txn));
+      window.location.href = "addtransaction.html";
+    }
+  } else if (loggedUser) {
+    const docRef = doc(db, "transactions", id);
+    const txnSnap = await getDoc(docRef);
+    if (txnSnap.exists()) {
+      const txn = txnSnap.data();
+      txn.id = id;
+      localStorage.setItem("editTransaction", JSON.stringify(txn));
+      window.location.href = "addtransaction.html";
+    }
+  }
 }
 
 // ===================================
@@ -226,38 +293,15 @@ window.addEventListener("currencyChanged", async (e) => {
 });
 
 // ===================================
-// 🔔 TOAST
-// ===================================
-function showToast(message, type = "info") {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.className = `toast show ${type}`;
-  setTimeout(() => (toast.className = "toast"), 3000);
-}
-
-// ===================================
 // 🚪 LOGOUT
 // ===================================
+const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
   logoutBtn.addEventListener("click", (e) => {
     e.preventDefault();
-    localStorage.removeItem("loggedUser");
-    localStorage.removeItem("guestSession");
-
-    showToast("Logging out...", "info");
-    setTimeout(() => (window.location.href = "login.html"), 1000);
+    logout();
   });
 }
 
-// ===================================
-// 👤 DISPLAY USERNAME
-// ===================================
-if (navUserName) {
-  if (loggedUser && loggedUser.username) {
-    navUserName.textContent = loggedUser.username;
-  } else if (guestSession) {
-    navUserName.textContent = "Guest";
-  } else {
-    navUserName.textContent = "";
-  }
-}
+// ✅ Show username in navbar
+displayUserName("navUserName");

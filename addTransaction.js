@@ -1,189 +1,126 @@
+// ===== addTransaction.js =====
 import { db } from "./firebase.js";
-import { collection, addDoc, serverTimestamp, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import {
+  collection,
+  addDoc,
+  doc,
+  updateDoc,
+  serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { currentCurrency, currentSymbol } from "./appCurrency.js";
+import { logout, displayUserName } from "./authUtils.js";
 
 // =====================================
 // 🏦 INITIAL SETUP
 // =====================================
-let activeSymbol = currentSymbol;
 const form = document.getElementById("addTransactionForm");
-const transactionsList = document.getElementById("transactionsList");
 const symbolSpan = document.getElementById("currencySymbol");
+const submitBtn = form?.querySelector('button[type="submit"]');
 
 const loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
 const guestSession = JSON.parse(localStorage.getItem("guestSession"));
 const currentUser = loggedUser || guestSession;
 
-// ✅ Redirect if no session
-if (!currentUser) {
-  window.location.href = "login.html";
-}
+if (!currentUser) window.location.href = "login.html";
 
-// 🪙 Display current symbol
+// Check for edit mode
+const editTransaction = JSON.parse(localStorage.getItem("editTransaction"));
+
+// Set the currency symbol
 document.addEventListener("DOMContentLoaded", () => {
-  if (symbolSpan) symbolSpan.textContent = activeSymbol;
-  loadTransactions(); // Load all user or guest transactions on page load
-});
+  if (symbolSpan) symbolSpan.textContent = currentSymbol;
 
-// ✅ Ensure live sync once user currency loads from Firestore
-window.addEventListener("currencyChanged", (e) => {
-  const { symbol } = e.detail;
-  activeSymbol = symbol;
-  if (symbolSpan) symbolSpan.textContent = activeSymbol;
+  // Prefill if editing
+  if (editTransaction) prefillForm(editTransaction);
 });
 
 // =====================================
-// 🧩 CATEGORY CLASSES
+// 🧾 PREFILL FORM
 // =====================================
-const categoryClasses = {
-  medical: "medicaltag",
-  entertainment: "entertainmenttag",
-  income: "incometag",
-  gym: "gymtag",
-  food: "foodtag",
-  shopping: "shoppingtag",
-  utility: "utilitytag",
-  transport: "transporttag",
-  health: "fitnesstag",
-  groceries: "groceriestag",
-  others: "otherstag",
-};
-
-// =====================================
-// 📝 HANDLE FORM SUBMIT
-// =====================================
-if (form) {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const description = document.getElementById("description")?.value.trim();
-    const amount = parseFloat(document.getElementById("amount")?.value);
-    const type = document.getElementById("type")?.value;
-    const category = document.getElementById("category")?.value;
-    const date = document.getElementById("txn-date")?.value;
-
-    if (!description || isNaN(amount) || !type || !category || !date) {
-      showPopup("⚠️ Please fill all fields correctly.", "error");
-      return;
-    }
-
-    // Use a stable unique user ID for Firestore
-    const userId = currentUser?.id || currentUser?.email || currentUser?.username || "guest";
-
-    const transactionData = {
-      description,
-      amount,
-      type,
-      category,
-      date,
-      currency: currentCurrency,
-      createdAt: serverTimestamp(),
-      userId,
-    };
-
-    try {
-      // 👤 Guest mode → save locally
-      if (!loggedUser) {
-        const guestTxns = JSON.parse(localStorage.getItem("guestTransactions")) || [];
-        guestTxns.unshift({ ...transactionData, createdAt: new Date().toISOString() });
-        localStorage.setItem("guestTransactions", JSON.stringify(guestTxns));
-        addTransactionToUI(transactionData);
-        showPopup("Transaction saved locally (Guest mode)");
-      } 
-      // 👤 Logged-in → save to Firestore
-      else {
-        await addDoc(collection(db, "transactions"), transactionData);
-        addTransactionToUI(transactionData);
-        showPopup("Transaction added successfully!");
-      }
-
-      form.reset();
-      if (symbolSpan) symbolSpan.textContent = activeSymbol;
-    } catch (err) {
-      console.error("Error adding transaction:", err);
-      showPopup("⚠️ Failed to add transaction.", "error");
-    }
-  });
+function prefillForm(txn) {
+  document.getElementById("description").value = txn.description || "";
+  document.getElementById("amount").value = txn.amount || "";
+  document.getElementById("type").value = txn.type || "";
+  document.getElementById("category").value = txn.category || "";
+  document.getElementById("txn-date").value = txn.date || "";
+  if (submitBtn) submitBtn.textContent = "Update Transaction";
 }
 
 // =====================================
-// 💰 LOAD USER OR GUEST TRANSACTIONS
+// 📝 SUBMIT FORM (ADD OR EDIT)
 // =====================================
-async function loadTransactions() {
-  if (!transactionsList) return;
+form?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  transactionsList.innerHTML = "";
-  const userId = currentUser?.id || currentUser?.email || currentUser?.username || "guest";
+  const description = document.getElementById("description").value.trim();
+  const amount = parseFloat(document.getElementById("amount").value);
+  const type = document.getElementById("type").value;
+  const category = document.getElementById("category").value;
+  const date = document.getElementById("txn-date").value;
+
+  if (!description || isNaN(amount) || !type || !category || !date) {
+    showPopup("⚠️ Please fill all fields correctly.", "error");
+    return;
+  }
+
+  const userId = currentUser.id || currentUser.email || "guest";
+  const transactionData = {
+    description,
+    amount,
+    type,
+    category,
+    date,
+    currency: currentCurrency,
+    createdAt: serverTimestamp(),
+    userId,
+  };
 
   try {
-    if (!loggedUser) {
-      // Guest transactions
-      const guestTxns = JSON.parse(localStorage.getItem("guestTransactions")) || [];
-      guestTxns.forEach(txn => addTransactionToUI(txn));
+    if (editTransaction) {
+      // 🔄 UPDATE EXISTING TRANSACTION
+      if (loggedUser) {
+        const docRef = doc(db, "transactions", editTransaction.id);
+        await updateDoc(docRef, transactionData);
+      } else {
+        const guestTxns =
+          JSON.parse(localStorage.getItem("guestTransactions")) || [];
+        const index = guestTxns.findIndex((t) => t.id === editTransaction.id);
+        if (index > -1) {
+          guestTxns[index] = { ...guestTxns[index], ...transactionData };
+          localStorage.setItem("guestTransactions", JSON.stringify(guestTxns));
+        }
+      }
+
+      showPopup("Transaction updated successfully!");
+      localStorage.removeItem("editTransaction");
+      setTimeout(() => (window.location.href = "transaction.html"), 1200);
     } else {
-      // Logged-in user transactions from Firestore
-      const q = query(
-        collection(db, "transactions"),
-        where("userId", "==", userId),
-        orderBy("createdAt", "desc")
-      );
-      const snapshot = await getDocs(q);
-      snapshot.forEach(doc => addTransactionToUI(doc.data()));
+      // ➕ ADD NEW TRANSACTION
+      if (guestSession && !loggedUser) {
+        const guestTxns =
+          JSON.parse(localStorage.getItem("guestTransactions")) || [];
+        const newTxn = {
+          ...transactionData,
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+        };
+        guestTxns.unshift(newTxn);
+        localStorage.setItem("guestTransactions", JSON.stringify(guestTxns));
+      } else {
+        await addDoc(collection(db, "transactions"), transactionData);
+      }
+
+      showPopup("✅ Transaction added successfully!");
+      form.reset();
     }
   } catch (err) {
-    console.error("Error loading transactions:", err);
+    console.error("Error saving transaction:", err);
+    showPopup("⚠️ Failed to save transaction.", "error");
   }
-}
+});
 
 // =====================================
-// 💰 RENDER TRANSACTION PREVIEW
-// =====================================
-function addTransactionToUI(txn) {
-  if (!transactionsList) return;
-
-  const categoryClass = categoryClasses[txn.category] || "otherstag";
-  const amountClass = txn.type === "income" ? "credit" : "debit";
-  const arrowIcon =
-    txn.type === "income"
-      ? '<i class="fa-regular fa-arrow-up"></i>'
-      : '<i class="fa-regular fa-arrow-down"></i>';
-
-  const formattedAmount = `${txn.type === "income" ? "+" : "-"}${activeSymbol}${txn.amount.toLocaleString()}`;
-
-  const transactionHTML = `
-    <div class="transaction-table">
-      <div class="transaction-details">
-        <div class="transaction-indicator ${categoryClass}">
-          ${arrowIcon}
-        </div>
-        <div class="transaction-title-table">
-          <div class="transaction-title">
-            <h4>${txn.description}</h4>
-          </div>
-          <div class="transaction-date">
-            <div class="transaction-date-flex">
-              <i class="fa-regular fa-calendar"></i>
-              <span>${txn.date}</span>
-              <span class="dot"></span>
-            </div>
-            <div>
-              <i class="fa-regular fa-tag"></i>
-              <span class="tag ${categoryClass}">${txn.category}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="transaction-amount ${amountClass}">
-        <h4 data-value="${txn.amount}" data-type="${txn.type}">${formattedAmount}</h4>
-      </div>
-    </div>
-  `;
-
-  transactionsList.insertAdjacentHTML("afterbegin", transactionHTML);
-}
-
-// =====================================
-// 🔔 POPUP MESSAGE SYSTEM
+// 🔔 POPUP
 // =====================================
 function showPopup(message, type = "success") {
   let popup = document.getElementById("popup");
@@ -208,22 +145,12 @@ function showPopup(message, type = "success") {
   }, 3000);
 }
 
-// ===== Toast Function (shared) =====
-function showToast(message, type = "info") {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.className = `toast show ${type}`;
-  setTimeout(() => (toast.className = "toast"), 3000);
-}
-
-// ===== Logout Logic =====
+// =====================================
+// 🚪 LOGOUT + NAV USERNAME
+// =====================================
 const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    localStorage.removeItem("loggedUser");
-    localStorage.removeItem("guestSession");
-    showToast("Logging out...", "info");
-    setTimeout(() => (window.location.href = "login.html"), 1200);
-  });
-}
+logoutBtn?.addEventListener("click", (e) => {
+  e.preventDefault();
+  logout();
+});
+displayUserName("navUserName");

@@ -281,7 +281,12 @@ body[data-theme="dark"] .theme-toggle span {
 	.main-section {
 		grid-template-columns: 55px 1fr;
 	}
-} 
+  aside span {
+    display: none;
+  }
+}
+
+
 
 
 @media only screen and (max-width: 767px) {

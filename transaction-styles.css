@@ -289,10 +289,44 @@ select {
 	color: #22C55E;
 }
 
+.transaction-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .transaction-amount h4 {
 	font-size: 16px;
 	font-weight: 500;
 }
+
+.transaction-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.transaction-actions button {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.transaction-actions button:hover {
+  transform: scale(1.1);
+}
+
+.edit-btn {
+  color: #007bff;
+}
+
+.delete-btn {
+  color: #e74c3c;
+}
+
 
 @media only screen and (max-width: 873px) {
   .filter-section i {
