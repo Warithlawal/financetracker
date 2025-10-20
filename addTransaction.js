@@ -58,10 +58,28 @@ form?.addEventListener("submit", async (e) => {
   const category = document.getElementById("category").value;
   const date = document.getElementById("txn-date").value;
 
-  if (!description || isNaN(amount) || !type || !category || !date) {
-    showPopup("⚠️ Please fill all fields correctly.", "error");
+  // 🧠 Individual field validation with specific messages
+  if (!description) {
+    showPopup("Please fill in the description.", "error");
     return;
   }
+  if (isNaN(amount) || amount <= 0) {
+    showPopup("Please enter a valid amount.", "error");
+    return;
+  }
+  if (!type) {
+    showPopup("Please select a transaction type.", "error");
+    return;
+  }
+  if (!category) {
+    showPopup("Please select a category.", "error");
+    return;
+  }
+  if (!date) {
+    showPopup("Please select a date.", "error");
+    return;
+  }
+
 
   const userId = currentUser.id || currentUser.email || "guest";
   const transactionData = {
@@ -110,12 +128,12 @@ form?.addEventListener("submit", async (e) => {
         await addDoc(collection(db, "transactions"), transactionData);
       }
 
-      showPopup("✅ Transaction added successfully!");
+      showPopup("Transaction added successfully!");
       form.reset();
     }
   } catch (err) {
     console.error("Error saving transaction:", err);
-    showPopup("⚠️ Failed to save transaction.", "error");
+    showPopup("⚠Failed to save transaction.", "error");
   }
 });
 

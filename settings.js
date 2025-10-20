@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       await setDoc(userRef, { name, email }, { merge: true });
     }
 
-    showPopup("✅ Settings saved successfully!");
+    showPopup("Settings saved successfully!");
   });
 
   // ===============================
