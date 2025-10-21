@@ -305,7 +305,8 @@ function renderIncomeVsExpenseChart(transactions = [], rates = {}) {
 
   const canvas = document.createElement("canvas");
   canvas.style.width = "100%";
-  canvas.style.height = "240px";
+  canvas.style.height = "100%";
+  canvas.style.maxHeight = "260px";
   container.appendChild(canvas);
   const ctx = canvas.getContext("2d");
 

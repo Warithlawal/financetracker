@@ -8,10 +8,7 @@
 
 body {
   background-color: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+
 }
 
 /* ===== Auth Card ===== */
@@ -22,7 +19,8 @@ body {
   border-radius: 12px;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
   text-align: left;
-  position: relative;
+  margin: 100px auto;
+  display: block;
 }
 
 .auth-container h2 {
@@ -45,7 +43,7 @@ label {
   color: #111827;
   font-weight: 500;
   font-size: 0.9rem;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 /* ===== Input Groups ===== */
@@ -62,6 +60,7 @@ label {
   color: #111827;
   background-color: #fff;
   transition: border-color 0.25s ease;
+  margin-bottom: 10px;
 }
 
 .input-group input::placeholder {

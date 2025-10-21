@@ -1,3 +1,8 @@
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 /* Default light theme */
 body[data-theme="light"] {
   --bg-color: #ffffff;
@@ -77,11 +82,15 @@ body[data-theme="dark"] {
 }
 
 .income-container {
-	margin: 24px 0 0;
-	padding: 24px;
-	background: var(--bg-color);
-	border-radius: 5px;
-	height: 370px;
+  margin: 24px 0 0;
+  padding: 16px 20px;
+  background: var(--bg-color);
+  border-radius: 8px;
+  min-height: 300px;          /* use min-height instead of fixed height */
+  max-height: 400px;          /* prevents it from blowing up */
+  overflow: hidden;           /* hides any accidental overflow */
+  display: flex;
+  flex-direction: column;
 }
 
 .income-container h1 {
@@ -89,18 +98,41 @@ body[data-theme="dark"] {
 	margin: 0 0 20px;
 }
 
+.income-container canvas {
+  flex: 1;
+  width: 100% !important;
+  height: auto !important;
+  max-height: 260px;
+}
+
 .charts-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
   margin-top: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0 8px; /* keeps breathing space on mobile */
 }
+
 
 .chart-content {
   background: var(--bg-color);
   padding: 20px;
   border-radius: 16px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.chart-content h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: var(--text-color, #111827);
+  white-space: normal;
+  word-break: break-word;
 }
 
 .chart-content .pie-chart,
@@ -108,7 +140,9 @@ body[data-theme="dark"] {
   position: relative;
   height: 250px;
   width: 100%;
+  overflow: hidden;
 }
+
 
 
 .chart-content h2 {
