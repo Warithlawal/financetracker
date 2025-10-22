@@ -234,46 +234,55 @@ sortLinks.forEach((link) => {
     link.classList.add("active");
 
     const sortBy = link.textContent.trim().toLowerCase();
-    if (sortBy.includes("date")) toggleSort("createdAt");
-    else if (sortBy.includes("amount")) toggleSort("amount");
+    if (sortBy.includes("date")) toggleSort("createdAt", "asc"); // default: oldest → newest
+    else if (sortBy.includes("amount")) toggleSort("amount", "desc");
 
     filterAndRender(searchInput.value, categoryFilter.value);
   });
 });
 
-function toggleSort(field) {
+function toggleSort(field, defaultDirection = "asc") {
   if (currentSort.field === field) {
     currentSort.direction =
       currentSort.direction === "desc" ? "asc" : "desc";
   } else {
     currentSort.field = field;
-    currentSort.direction = "desc";
+    currentSort.direction = defaultDirection;
   }
 }
 
 function filterAndRender(searchTerm, category) {
   const filtered = allTransactions.filter((item) => {
     const matchSearch = item.description
-      .toLowerCase()
-      .includes(searchTerm);
+      ?.toLowerCase()
+      .includes(searchTerm || "");
     const matchCategory = !category || item.category === category;
     return matchSearch && matchCategory;
   });
 
   const sorted = [...filtered].sort((a, b) => {
     const dir = currentSort.direction === "desc" ? -1 : 1;
-    if (currentSort.field === "amount")
+
+    if (currentSort.field === "amount") {
       return (Number(a.amount) - Number(b.amount)) * dir;
-    if (currentSort.field === "createdAt")
-      return (
-        ((a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)) *
-        dir
-      );
+    }
+
+    if (currentSort.field === "createdAt") {
+      const aDate = a.createdAt?.seconds
+        ? a.createdAt.seconds * 1000
+        : new Date(a.createdAt || 0).getTime();
+      const bDate = b.createdAt?.seconds
+        ? b.createdAt.seconds * 1000
+        : new Date(b.createdAt || 0).getTime();
+      return (aDate - bDate) * dir;
+    }
+
     return 0;
   });
 
   renderTransactions(sorted);
 }
+
 
 // ===================================
 // 🌍 REACT TO CURRENCY CHANGE

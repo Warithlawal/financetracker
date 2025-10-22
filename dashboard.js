@@ -40,7 +40,12 @@ function logout() {
 // 📦 DOM ELEMENTS
 // ==============================
 const transactionsList = document.getElementById("transactionsList");
-const viewAllLink = document.querySelector(".recent-header a");
+const viewAllBtn = document.getElementById("viewAllBtn");
+
+// Defensive checks
+if (!transactionsList) {
+  console.warn("transactionsList element not found in DOM.");
+}
 
 let showAll = false;
 let latestSnapshot = null;
@@ -49,6 +54,11 @@ let categoryTotals = {};
 let dailyTotals = {};
 let unsubscribe = null;
 
+// Global storage for view-all rendering
+let allTransactions = [];
+let allRates = {};
+
+// Map of category classes (used for styling)
 const categoryClasses = {
   income: "income",
   housing: "utility",
@@ -56,6 +66,7 @@ const categoryClasses = {
   entertainment: "entertainment",
   food: "food",
   transport: "transport",
+  travel: "travel",
   shopping: "shopping",
   fitness: "gym",
   medical: "medical",
@@ -73,12 +84,16 @@ function listenToTransactions() {
   if (unsubscribe) unsubscribe();
   latestSnapshot = null;
 
-  if (guestSession) {
+  if (guestSession && !loggedUser) {
     // Guest mode → local transactions
     const guestTransactions =
       JSON.parse(localStorage.getItem("guestTransactions")) || [];
-    renderGuestTransactions(guestTransactions);
+
+    // normalize and save globally for viewAll
+    allTransactions = guestTransactions.slice(); // copy
+    allRates = {}; // no external rates for guests
     updateTotals(guestTransactions);
+    setupViewAll(allTransactions, allRates);
     renderCategoryChart(categoryTotals);
     renderWeeklyChart(dailyTotals);
     return;
@@ -91,22 +106,35 @@ function listenToTransactions() {
       orderBy("createdAt", "desc")
     );
 
-    unsubscribe = onSnapshot(q, async (snapshot) => {
-      latestSnapshot = snapshot;
-      const transactions = [];
-      snapshot.forEach((doc) => transactions.push(doc.data()));
+    unsubscribe = onSnapshot(
+      q,
+      async (snapshot) => {
+        latestSnapshot = snapshot;
+        const transactions = [];
+        snapshot.forEach((doc) => transactions.push(doc.data()));
 
-      const codes = [...new Set(transactions.map((t) => t.currency || "NGN"))].filter(
-        (c) => c !== currentCurrency
-      );
+        // Save globally so viewAll can re-render
+        allTransactions = transactions.slice(); // copy
 
-      const rates = await fetchRates(currentCurrency, codes);
-      updateTotals(transactions, rates);
-      renderTransactions(transactions, rates);
-      setupViewAll(transactions, rates);
-      renderCategoryChart(categoryTotals);
-      renderWeeklyChart(dailyTotals);
-    });
+        const codes = [...new Set(transactions.map((t) => t.currency || "NGN"))].filter(
+          (c) => c !== currentCurrency
+        );
+
+        const rates = codes.length ? await fetchRates(currentCurrency, codes) : {};
+        allRates = rates;
+
+        updateTotals(transactions, rates);
+
+        // setupViewAll will render transactions (and attach listener once)
+        setupViewAll(allTransactions, allRates);
+
+        renderCategoryChart(categoryTotals);
+        renderWeeklyChart(dailyTotals);
+      },
+      (err) => {
+        console.error("onSnapshot error (dashboard):", err);
+      }
+    );
   }
 }
 
@@ -130,7 +158,9 @@ function updateTotals(transactions, rates = {}) {
       convertedAmount = amount / rates[fromCurrency];
     }
 
-    const txnDate = new Date(txn.date);
+    // Defensive date handling
+    const txnDate = txn.date ? new Date(txn.date) : new Date();
+    if (isNaN(txnDate)) continue;
 
     if (txn.type === "income") {
       totalIncome += convertedAmount;
@@ -154,6 +184,7 @@ function updateTotals(transactions, rates = {}) {
 // 🧾 RENDER GUEST TRANSACTIONS
 // ==============================
 function renderGuestTransactions(guestTransactions) {
+  if (!transactionsList) return;
   transactionsList.innerHTML = "";
 
   if (guestTransactions.length === 0) {
@@ -194,13 +225,44 @@ function renderGuestTransactions(guestTransactions) {
 }
 
 // ==============================
-// 🧾 RENDER FIRESTORE TRANSACTIONS
+// 🔄 VIEW ALL TOGGLE (stable)
 // ==============================
-function renderTransactions(transactions, rates) {
-  transactionsList.innerHTML = "";
-  const limitedTxns = showAll ? transactions : transactions.slice(0, 5);
+function setupViewAll(transactions = [], rates = {}) {
+  // If the container is missing, bail
+  if (!transactionsList) return;
 
-  if (limitedTxns.length === 0) {
+  // Save data globally so it can be re-rendered without re-query
+  allTransactions = Array.isArray(transactions) ? transactions.slice() : [];
+  allRates = rates || {};
+
+  // Render initially using current showAll state
+  renderTransactions(allTransactions, allRates);
+
+  // Attach click listener only once (if the button exists)
+  if (!viewAllBtn) return;
+  if (!viewAllBtn.dataset.listenerAttached) {
+    viewAllBtn.addEventListener("click", () => {
+      showAll = !showAll;
+      viewAllBtn.textContent = showAll ? "Show Less" : "View All";
+      renderTransactions(allTransactions, allRates);
+    });
+    viewAllBtn.dataset.listenerAttached = "true";
+  }
+
+  // Ensure button text matches current state (useful when snapshots re-run)
+  viewAllBtn.textContent = showAll ? "Show Less" : "View All";
+}
+
+// ==============================
+// 🧾 RENDER TRANSACTIONS
+// ==============================
+function renderTransactions(transactions = [], rates = {}) {
+  if (!transactionsList) return;
+
+  transactionsList.innerHTML = "";
+
+  // If there are no transactions at all, show empty state
+  if (!Array.isArray(transactions) || transactions.length === 0) {
     transactionsList.innerHTML = `
       <div class="no-transactions">
         <p>No recent transactions.</p>
@@ -210,7 +272,10 @@ function renderTransactions(transactions, rates) {
     return;
   }
 
-  limitedTxns.forEach((txn) => {
+  // Decide what to show according to showAll flag
+  const visibleTxns = showAll ? transactions : transactions.slice(0, 5);
+
+  visibleTxns.forEach((txn) => {
     const isIncome = txn.type === "income";
     const categoryClass = categoryClasses[txn.category] || "utility";
     const amountClass = isIncome
@@ -219,7 +284,7 @@ function renderTransactions(transactions, rates) {
 
     let amount = Number(txn.amount);
     const fromCurrency = txn.currency || "NGN";
-    if (fromCurrency !== currentCurrency && rates[fromCurrency]) {
+    if (fromCurrency !== currentCurrency && rates && rates[fromCurrency]) {
       amount = amount / rates[fromCurrency];
     }
 
@@ -235,27 +300,13 @@ function renderTransactions(transactions, rates) {
           </div>
         </div>
         <div class="${amountClass}">
-          <p data-value="${amount}">
-            ${isIncome ? "+" : "-"}${formatCurrency(amount, currentCurrency)}
-          </p>
+          <p>${isIncome ? "+" : "-"}${formatCurrency(amount, currentCurrency)}</p>
         </div>
       </div>
     `;
 
     transactionsList.insertAdjacentHTML("beforeend", transactionHTML);
   });
-}
-
-// ==============================
-// 🔄 VIEW ALL TOGGLE
-// ==============================
-function setupViewAll(transactions, rates) {
-  viewAllLink.onclick = (e) => {
-    e.preventDefault();
-    showAll = !showAll;
-    viewAllLink.textContent = showAll ? "Show Less" : "View All";
-    renderTransactions(transactions, rates);
-  };
 }
 
 // ==============================
@@ -267,7 +318,10 @@ function getDayName(dateString) {
 }
 
 function renderCategoryChart(data) {
-  const ctx = document.getElementById("categoryChart").getContext("2d");
+  const el = document.getElementById("categoryChart");
+  if (!el) return;
+  const ctx = el.getContext("2d");
+
   if (categoryChart) categoryChart.destroy();
 
   let categories = Object.keys(data);
@@ -314,7 +368,10 @@ function renderCategoryChart(data) {
 }
 
 function renderWeeklyChart(dailyTotals) {
-  const ctx = document.getElementById("weeklyChart").getContext("2d");
+  const el = document.getElementById("weeklyChart");
+  if (!el) return;
+  const ctx = el.getContext("2d");
+
   if (weeklyChart) weeklyChart.destroy();
 
   const now = new Date();
@@ -342,7 +399,7 @@ function renderWeeklyChart(dailyTotals) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false, // <-- add this
+      maintainAspectRatio: false,
       scales: { y: { beginAtZero: true } },
       plugins: { legend: { display: false } },
     },
@@ -357,10 +414,14 @@ window.addEventListener("currencyChanged", async (e) => {
   setCurrency(currency);
   updateDashboardUI();
 
+  // Re-render charts labels
   if (weeklyChart) {
     weeklyChart.data.datasets[0].label = `Daily Spending (${currency})`;
     weeklyChart.update();
   }
+
+  // When user changes currency, re-render visible transactions
+  renderTransactions(allTransactions, allRates);
 });
 
 // ==============================
@@ -371,11 +432,12 @@ function updateDashboardUI() {
     const label = el.querySelector("p")?.textContent?.toLowerCase();
     const valueEl = el.querySelector("h1");
 
-    if (label === "balance")
+    if (!label || !valueEl) return;
+    if (label.includes("balance"))
       valueEl.textContent = formatCurrency(totals.balance, currentCurrency);
-    if (label === "income")
+    if (label.includes("income"))
       valueEl.textContent = formatCurrency(totals.income, currentCurrency);
-    if (label === "expenses")
+    if (label.includes("expenses"))
       valueEl.textContent = formatCurrency(totals.expenses, currentCurrency);
   });
 }
@@ -385,6 +447,7 @@ function updateDashboardUI() {
 // ==============================
 function showToast(message, type = "info") {
   const toast = document.getElementById("toast");
+  if (!toast) return;
   toast.textContent = message;
   toast.className = `toast show ${type}`;
   setTimeout(() => (toast.className = "toast"), 3000);

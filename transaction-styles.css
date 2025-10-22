@@ -261,6 +261,11 @@ select {
   background: #6366F120;
 }
 
+.traveltag {
+  background: #6366F120;
+  color: #6366F1;
+}
+
 .fitnesstag {
   color: #10B981;
   background: #10B98120;
